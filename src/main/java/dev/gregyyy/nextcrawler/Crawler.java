@@ -20,6 +20,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -70,8 +71,8 @@ public class Crawler {
                 for (Place place : places) {
                     points.add(Point.measurement("places")
                             .time(date.getTime(), TimeUnit.MILLISECONDS)
-                            .tag("uid", place.getUid() + "")
                             .tag("name", place.getName())
+                            .addField("uid", place.getUid())
                             .addField("name", place.getName())
                             .addField("bike", place.isBike())
                             .addField("lat", place.getLatitude())
@@ -187,7 +188,7 @@ public class Crawler {
         Request request = new Request.Builder().url(API_HOST + "maps/nextbike-live.json?domains=" + domains).build();
 
         try (Response response = client.newCall(request).execute()) {
-            String content = response.body().string();
+            String content = Objects.requireNonNull(response.body()).string();
 
             return gson.fromJson(content, MapsResult.class);
         }

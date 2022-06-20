@@ -6,7 +6,7 @@
 
     <groupId>dev.gregyyy</groupId>
     <artifactId>NextCrawler</artifactId>
-    <version>0.2</version>
+    <version>0.2.1</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -36,16 +36,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>dev.gregyyy.nextcrawler.NextCrawler</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -58,6 +48,11 @@
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
+                    <archive>
+                        <manifest>
+                            <mainClass>dev.gregyyy.nextcrawler.NextCrawler</mainClass>
+                        </manifest>
+                    </archive>
                 </configuration>
             </plugin>
         </plugins>
