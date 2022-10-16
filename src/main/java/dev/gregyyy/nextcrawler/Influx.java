@@ -1,49 +1,56 @@
 package dev.gregyyy.nextcrawler;
 
+import com.influxdb.client.InfluxDBClient;
+import com.influxdb.client.InfluxDBClientFactory;
+import com.influxdb.client.InfluxDBClientOptions;
+import com.influxdb.client.QueryApi;
+import com.influxdb.client.WriteApi;
+import com.influxdb.client.write.Point;
+import com.influxdb.query.FluxTable;
 
-import org.influxdb.BatchOptions;
-import org.influxdb.InfluxDB;
-import org.influxdb.InfluxDBFactory;
-import org.influxdb.dto.BatchPoints;
-import org.influxdb.dto.Point;
-import org.influxdb.dto.Query;
-import org.influxdb.dto.QueryResult;
+import java.util.List;
 
 public class Influx {
 
-    private final InfluxDB client;
+    private final InfluxDBClient client;
+    private WriteApi writeApi;
+    private QueryApi queryApi;
 
-    public Influx(String host, String user, String password) {
-        this.client = InfluxDBFactory.connect(host, user, password);
+    public Influx(String url, String token, String org, String bucket) {
+        this.client = InfluxDBClientFactory.create(url, token.toCharArray(), org, bucket);
+        setApis();
     }
 
-    public void createDatabase(String name) {
-        client.query(new Query("CREATE DATABASE " + name));
-        client.setDatabase(name);
+    public Influx(String url, String username, String password, String bucket, String org) {
+        InfluxDBClientOptions options = InfluxDBClientOptions.builder()
+                .url(url)
+                .authenticate(username, password.toCharArray())
+                .bucket(bucket)
+                .org(org)
+                .build();
+        this.client = InfluxDBClientFactory.create(options);
+        setApis();
     }
 
-    public void enableBatchWrites() {
-        client.enableBatch(BatchOptions.DEFAULTS.threadFactory(runnable -> {
-            Thread thread = new Thread(runnable);
-            thread.setDaemon(true);
-            return thread;
-        }));
+    private void setApis() {
+        this.writeApi = client.makeWriteApi();
+        this.queryApi = client.getQueryApi();
     }
 
     public void write(Point point) {
-        client.write(point);
+        writeApi.writePoint(point);
     }
 
-    public void write(BatchPoints points) {
-        client.write(points);
+    public void write(List<Point> points) {
+        writeApi.writePoints(points);
     }
 
-    public QueryResult query(String query) {
-        return client.query(new Query(query));
+    public List<FluxTable> query(String query) {
+        return queryApi.query(query);
     }
 
     public void dropMeasurement(String measurement) {
-        client.query(new Query("DROP MEASUREMENT " + measurement));
+        queryApi.query("DROP MEASUREMENT " + measurement);
     }
 
 }

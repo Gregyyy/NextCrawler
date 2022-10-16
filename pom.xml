@@ -6,7 +6,7 @@
 
     <groupId>dev.gregyyy</groupId>
     <artifactId>NextCrawler</artifactId>
-    <version>0.2.1</version>
+    <version>0.3.0</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -15,9 +15,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.influxdb</groupId>
-            <artifactId>influxdb-java</artifactId>
-            <version>2.22</version>
+            <groupId>com.influxdb</groupId>
+            <artifactId>influxdb-client-java</artifactId>
+            <version>6.6.0</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>

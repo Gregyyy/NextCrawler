@@ -1,6 +1,8 @@
 package dev.gregyyy.nextcrawler;
 
 import com.google.gson.Gson;
+import com.influxdb.client.domain.WritePrecision;
+import com.influxdb.client.write.Point;
 import dev.gregyyy.nextcrawler.api.element.City;
 import dev.gregyyy.nextcrawler.api.element.MapsResult;
 import dev.gregyyy.nextcrawler.api.element.Place;
@@ -10,8 +12,6 @@ import dev.gregyyy.nextcrawler.model.Trip;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.influxdb.dto.BatchPoints;
-import org.influxdb.dto.Point;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -62,16 +62,16 @@ public class Crawler {
                 List<Point> points = new ArrayList<>();
 
                 points.add(Point.measurement("city")
-                        .time(date.getTime(), TimeUnit.MILLISECONDS)
+                        .time(date.getTime(), WritePrecision.MS)
                         .addField("setPointBikes", karlsruhe.getSetPointBikes())
                         .addField("numberOfPlaces", karlsruhe.getNumberOfPlaces())
                         .addField("bookedBikes", karlsruhe.getBookedBikes())
-                        .addField("availableBikes", karlsruhe.getAvailableBikes()).build());
+                        .addField("availableBikes", karlsruhe.getAvailableBikes()));
 
                 for (Place place : places) {
                     points.add(Point.measurement("places")
-                            .time(date.getTime(), TimeUnit.MILLISECONDS)
-                            .tag("name", place.getName())
+                            .time(date.getTime(), WritePrecision.MS)
+                            .addTag("name", place.getName())
                             .addField("uid", place.getUid())
                             .addField("name", place.getName())
                             .addField("bike", place.isBike())
@@ -81,19 +81,19 @@ public class Crawler {
                             .addField("numberOfBikes", place.getNumberOfBikes())
                             .addField("numberOfBikesAvailableToRent", place.getNumberOfBikesAvailableToRent())
                             .addField("numberOfBikeRacks", place.getNumberOfBikeRacks())
-                            .addField("numberOfFreeRacks", place.getNumberOfBikeRacks()).build());
+                            .addField("numberOfFreeRacks", place.getNumberOfBikeRacks()));
                 }
 
                 saveBikes(List.of(places));
 
                 for (Bike bike : bikes) {
                     points.add(Point.measurement("bikes")
-                            .time(date.getTime(), TimeUnit.MILLISECONDS)
-                            .tag("name", bike.getNumber())
+                            .time(date.getTime(), WritePrecision.MS)
+                            .addTag("name", bike.getNumber())
                             .addField("status", bike.getStatus().toString())
                             .addField("uid", bike.getUid())
                             .addField("lat", bike.getLocation().lat())
-                            .addField("lon", bike.getLocation().lon()).build());
+                            .addField("lon", bike.getLocation().lon()));
                 }
 
                 saveTrips(date);
@@ -101,21 +101,21 @@ public class Crawler {
                 for (Trip trip : trips) {
                     if (trip.getEndLocation() != null) {
                         points.add(Point.measurement("trips")
-                                .time(trip.getStartDate().getTime(), TimeUnit.MILLISECONDS)
-                                .tag("bikeNumber", trip.getBikeNumber())
+                                .time(trip.getStartDate().getTime(), WritePrecision.MS)
+                                .addTag("bikeNumber", trip.getBikeNumber())
                                 .addField("durationInMinutes", trip.getDurationInMinutes())
                                 .addField("startUid", trip.getStartUid())
                                 .addField("endUid", trip.getEndUid())
                                 .addField("startLat", trip.getStartLocation().lat())
                                 .addField("startLon", trip.getStartLocation().lon())
                                 .addField("endLat", trip.getEndLocation().lat())
-                                .addField("endLon", trip.getEndLocation().lon()).build());
+                                .addField("endLon", trip.getEndLocation().lon()));
                     }
                 }
 
                 trips.removeIf(trip -> trip.getEndLocation() != null);
 
-                influx.write(BatchPoints.builder().points(points).build());
+                influx.write(points);
                 System.out.println("Saved");
             } catch (Exception e) {
                 e.printStackTrace();
