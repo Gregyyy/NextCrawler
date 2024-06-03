@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+  nextcrawler:
+    image: nextcrawler:latest
+    container_name: "nextcrawler"
+    environment:
+      - DATABASE=INFLUX
+      - CONNECTION_MODE=LOCAL
+      - INFLUX_URL=http://influx:8086
+      - INFLUX_USERNAME=root
+      - INFLUX_PASSWORD=influxdb_root_password
+      - INFLUX_BUCKET=NextCrawler
+      - INFLUX_ORG=Nycolix
+      - QUERY_INTERVAL=1
+    networks:
+      - nextcrawler
+  influx:
+    image: influxdb:latest
+    environment:
+      - DOCKER_INFLUXDB_INIT_USERNAME=root
+      - DOCKER_INFLUXDB_INIT_PASSWORD=influxdb_root_password
+      - DOCKER_INFLUXDB_INIT_ORG=Nycolix
+      - DOCKER_INFLUXDB_INIT_BUCKET=NextCrawler
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.influx.rule=Host(`influx.coly.dev`)"
+      - "traefik.http.services.influx.loadbalancer.server.port=8086"
+    volumes:
+      - influxdb2:/var/lib/influxdb2
+    networks:
+      - nextcrawler
+    restart: on-failure:5
+
+networks:
+  nextcrawler:
+    name: nextcrawler
+
+volumes:
+  influxdb2:

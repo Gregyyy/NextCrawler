@@ -1,4 +1,4 @@
-package dev.gregyyy.nextcrawler;
+package dev.gregyyy.nextcrawler.database;
 
 import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.InfluxDBClientFactory;
