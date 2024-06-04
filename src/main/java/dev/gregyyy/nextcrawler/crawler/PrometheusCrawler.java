@@ -74,19 +74,17 @@ public class PrometheusCrawler extends Crawler {
         geoFenceReservedBikes.labels("unifest_small").set(reservedBikes);
 
         for (Trip trip : trips) {
+            if (trip.getEndLocation() == null) {
+                continue;
+            }
+
             String[] tripLabels = {trip.getBikeNumber(), trip.getStartUid() + "", trip.getEndUid() + ""};
 
             tripDurationInMinutes.labels(tripLabels).set(trip.getDurationInMinutes());
-
-            if (trip.getStartLocation() != null) {
-                tripStartLat.labels(tripLabels).set(trip.getStartLocation().lat());
-                tripStartLon.labels(tripLabels).set(trip.getStartLocation().lon());
-            }
-
-            if (trip.getEndLocation() != null) {
-                tripEndLat.labels(tripLabels).set(trip.getEndLocation().lat());
-                tripEndLon.labels(tripLabels).set(trip.getEndLocation().lon());
-            }
+            tripStartLat.labels(tripLabels).set(trip.getStartLocation().lat());
+            tripStartLon.labels(tripLabels).set(trip.getStartLocation().lon());
+            tripEndLat.labels(tripLabels).set(trip.getEndLocation().lat());
+            tripEndLon.labels(tripLabels).set(trip.getEndLocation().lon());
         }
     }
 }

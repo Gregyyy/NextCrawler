@@ -12,14 +12,8 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 import java.io.IOException;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.time.*;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -61,6 +55,7 @@ public abstract class Crawler {
 
                 saveInMemory(places);
                 save(places, karlsruhe, bikes, trips);
+                trips.removeIf(trip -> trip.getEndLocation() != null);
 
                 System.out.println("Saved");
             } catch (Exception e) {
@@ -87,7 +82,6 @@ public abstract class Crawler {
     private void saveInMemory(List<Place> places) {
         saveBikes(places);
         saveTrips(new Date());
-        trips.removeIf(trip -> trip.getEndLocation() != null);
     }
 
     private void saveBikes(List<Place> places) {
@@ -133,9 +127,8 @@ public abstract class Crawler {
             if (trip.isPresent() && bike.getStatus() != Status.UNAVAILABLE) {
                 trip.get().setEndLocation(bike.getLocation());
                 trip.get().setEndUid(bike.getUid());
-                LocalDateTime startDate = LocalDateTime.ofEpochSecond(
-                        trip.get().getStartDate().getTime() / 1000, 0, ZoneOffset.UTC);
-                trip.get().setDurationInMinutes(Duration.between(startDate, LocalDateTime.now()).toMinutesPart());
+                ZonedDateTime startDate = trip.get().getStartDate().toInstant().atZone(ZoneId.of("Europe/Berlin"));
+                trip.get().setDurationInMinutes((int) Duration.between(startDate, ZonedDateTime.now()).toMinutes());
             } else if (trip.isEmpty() && bike.getStatus() == Status.UNAVAILABLE) {
                 trips.add(new Trip(bike.getNumber(), bike.getUid(), date, bike.getLocation()));
             }
