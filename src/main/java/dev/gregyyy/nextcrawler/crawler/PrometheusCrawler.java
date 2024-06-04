@@ -32,7 +32,7 @@ public class PrometheusCrawler extends Crawler {
         cityAvailableBikes.labels(cityLabels).set(city.getAvailableBikes());
 
         for (Place place : places) {
-            String[] placeLabels = {place.getUid() + "", place.getName(), place.isBike() + "", place.getLatitude() + "",
+            String[] placeLabels = {place.getName(), place.isBike() + "", place.getLatitude() + "",
                     place.getLongitude() + ""};
 
             placeBookedBikes.labels(placeLabels).set(place.getNumberOfBookedBikes());
@@ -40,24 +40,31 @@ public class PrometheusCrawler extends Crawler {
             placeBikesAvailableToRent.labels(placeLabels).set(place.getNumberOfBikesAvailableToRent());
             placeBikeRacks.labels(placeLabels).set(place.getNumberOfBikeRacks());
             placeFreeRacks.labels(placeLabels).set(place.getNumberOfFreeRacks());
+            placeUid.labels(placeLabels).set(place.getUid());
         }
 
         int totalBikes = 0;
         int availableBikes = 0;
         int reservedBikes = 0;
         for (Bike bike : bikes) {
-            String[] bikeLabels = {bike.getUid() + "", bike.getNumber()};
+            String[] bikeLabels = {bike.getNumber()};
 
             bikeStatus.labels(bikeLabels).set(bike.getStatus().ordinal());
             bikeLat.labels(bikeLabels).set(bike.getLocation().lat());
             bikeLon.labels(bikeLabels).set(bike.getLocation().lon());
+            bikeUid.labels(bikeLabels).set(bike.getUid());
 
             if (GeoFencingUtil.doesPointIntersectPolygon(unifestSmall,
                     new Location(bike.getLocation().lat(), bike.getLocation().lon()))) {
-                totalBikes++;
                 switch (bike.getStatus()) {
-                    case AVAILABLE -> availableBikes++;
-                    case RESERVED -> reservedBikes++;
+                    case AVAILABLE -> {
+                        totalBikes++;
+                        availableBikes++;
+                    }
+                    case RESERVED -> {
+                        totalBikes++;
+                        reservedBikes++;
+                    }
                 }
             }
         }
@@ -73,7 +80,7 @@ public class PrometheusCrawler extends Crawler {
 
             if (trip.getStartLocation() != null) {
                 tripStartLat.labels(tripLabels).set(trip.getStartLocation().lat());
-                tripStartLon.labels(tripLabels).set(trip.getStartLocation().lat());
+                tripStartLon.labels(tripLabels).set(trip.getStartLocation().lon());
             }
 
             if (trip.getEndLocation() != null) {

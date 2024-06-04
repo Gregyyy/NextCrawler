@@ -2,8 +2,6 @@ package dev.gregyyy.nextcrawler.database;
 
 import io.prometheus.client.Gauge;
 
-import java.util.List;
-
 public class Prometheus {
 
     public static final String[] cityLabels = {"uid", "name", "alias"};
@@ -28,7 +26,7 @@ public class Prometheus {
             .labelNames(cityLabels)
             .register();
 
-    public static final String[] placeLabels = {"uid", "name", "isBike", "lat", "lon"};
+    public static final String[] placeLabels = {"name", "isBike", "lat", "lon"};
     public static final Gauge placeBookedBikes = Gauge.build()
             .name("nextcrawler_place_booked_bikes")
             .help("Number of booked bikes at a place")
@@ -54,8 +52,13 @@ public class Prometheus {
             .help("Number of free bike racks at a place")
             .labelNames(placeLabels)
             .register();
+    public static final Gauge placeUid = Gauge.build()
+            .name("nextcrawler_place_uid")
+            .help("Current uid of a place")
+            .labelNames(placeLabels)
+            .register();
 
-    public static final String[] bikeLabels = {"uid", "name"};
+    public static final String[] bikeLabels = {"name"};
     public static final Gauge bikeStatus = Gauge.build()
             .name("nextcrawler_bike_status")
             .help("Status of a bike")
@@ -69,6 +72,11 @@ public class Prometheus {
     public static final Gauge bikeLon = Gauge.build()
             .name("nextcrawler_bike_lon")
             .help("Longitude of position of a bike")
+            .labelNames(bikeLabels)
+            .register();
+    public static final Gauge bikeUid = Gauge.build()
+            .name("nextcrawler_bike_uid")
+            .help("Current uid of a bike")
             .labelNames(bikeLabels)
             .register();
 
