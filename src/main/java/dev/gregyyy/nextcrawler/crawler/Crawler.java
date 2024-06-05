@@ -81,7 +81,7 @@ public abstract class Crawler {
 
     private void saveInMemory(List<Place> places) {
         saveBikes(places);
-        saveTrips(new Date());
+        saveTrips(ZonedDateTime.now());
     }
 
     private void saveBikes(List<Place> places) {
@@ -115,7 +115,7 @@ public abstract class Crawler {
         }
     }
 
-    private void saveTrips(Date date) {
+    private void saveTrips(ZonedDateTime date) {
         for (Bike bike : bikes) {
             Optional<Trip> trip = trips.stream().filter(el -> el.getBikeNumber().equals(bike.getNumber())).findFirst();
 
@@ -127,8 +127,9 @@ public abstract class Crawler {
             if (trip.isPresent() && bike.getStatus() != Status.UNAVAILABLE) {
                 trip.get().setEndLocation(bike.getLocation());
                 trip.get().setEndUid(bike.getUid());
-                ZonedDateTime startDate = trip.get().getStartDate().toInstant().atZone(ZoneId.of("Europe/Berlin"));
-                trip.get().setDurationInMinutes((int) Duration.between(startDate, ZonedDateTime.now()).toMinutes());
+                int duration = (int) Duration.between(trip.get().getStartDate(), ZonedDateTime.now()).toMinutes();
+                trip.get().setDurationInMinutes(duration);
+                trip.get().setEndDate(date);
             } else if (trip.isEmpty() && bike.getStatus() == Status.UNAVAILABLE) {
                 trips.add(new Trip(bike.getNumber(), bike.getUid(), date, bike.getLocation()));
             }

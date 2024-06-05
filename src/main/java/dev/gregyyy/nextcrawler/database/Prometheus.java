@@ -80,7 +80,7 @@ public class Prometheus {
             .labelNames(bikeLabels)
             .register();
 
-    public static final String[] tripLabels = {"bikeNumber", "startUid", "endUid"};
+    public static final String[] tripLabels = {"bikeNumber", "startUid", "endUid", "startDate", "endDate"};
     public static final Gauge tripDurationInMinutes = Gauge.build()
             .name("nextcrawler_trip_duration_in_minutes")
             .help("Duration in minutes of trip")

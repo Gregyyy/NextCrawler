@@ -62,7 +62,7 @@ public class InfluxCrawler extends Crawler {
         for (Trip trip : trips) {
             if (trip.getEndLocation() != null) {
                 points.add(Point.measurement("trips")
-                        .time(trip.getStartDate().getTime(), WritePrecision.MS)
+                        .time(trip.getStartDate().toInstant(), WritePrecision.MS)
                         .addTag("bikeNumber", trip.getBikeNumber())
                         .addField("durationInMinutes", trip.getDurationInMinutes())
                         .addField("startUid", trip.getStartUid())

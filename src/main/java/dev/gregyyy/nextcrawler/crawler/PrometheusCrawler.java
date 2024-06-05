@@ -7,6 +7,7 @@ import dev.gregyyy.nextcrawler.model.Location;
 import dev.gregyyy.nextcrawler.model.Trip;
 import dev.gregyyy.nextcrawler.util.GeoFencingUtil;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static dev.gregyyy.nextcrawler.database.Prometheus.*;
@@ -73,12 +74,21 @@ public class PrometheusCrawler extends Crawler {
         geoFenceAvailableBikes.labels("unifest_small").set(availableBikes);
         geoFenceReservedBikes.labels("unifest_small").set(reservedBikes);
 
+        tripDurationInMinutes.clear();
+        tripStartLat.clear();
+        tripStartLon.clear();
+        tripEndLat.clear();
+        tripEndLon.clear();
+
         for (Trip trip : trips) {
             if (trip.getEndLocation() == null) {
                 continue;
             }
 
-            String[] tripLabels = {trip.getBikeNumber(), trip.getStartUid() + "", trip.getEndUid() + ""};
+            DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
+
+            String[] tripLabels = {trip.getBikeNumber(), trip.getStartUid() + "", trip.getEndUid() + "",
+                    formatter.format(trip.getStartDate()), formatter.format(trip.getEndDate())};
 
             tripDurationInMinutes.labels(tripLabels).set(trip.getDurationInMinutes());
             tripStartLat.labels(tripLabels).set(trip.getStartLocation().lat());
