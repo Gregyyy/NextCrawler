@@ -23,6 +23,16 @@ public class PrometheusCrawler extends Crawler {
             new Location(49.00914, 8.41632) // right bottom
     );
 
+    private final List<Location> unifestBig = List.of(
+            new Location(49.00902, 8.41006), // Kronenplatz
+            new Location(49.01001, 8.40974), // Kant-Gymnasium
+            new Location(49.01171, 8.41164), // Straße vor Gerthsen
+            new Location(49.01421, 8.41288), // Fasanengarten
+            new Location(49.01413, 8.41936), // Infobau
+            new Location(49.01123, 8.41916), // InformatiKOM
+            new Location(49.00849, 8.41787) // Durlacher Tor
+    );
+
     @Override
     public void save(List<Place> places, City city, List<Bike> bikes, List<Trip> trips) {
         String[] cityLabels = {city.getUid(), city.getName(), city.getAlias()};
@@ -44,9 +54,6 @@ public class PrometheusCrawler extends Crawler {
             placeUid.labels(placeLabels).set(place.getUid());
         }
 
-        int totalBikes = 0;
-        int availableBikes = 0;
-        int reservedBikes = 0;
         for (Bike bike : bikes) {
             String[] bikeLabels = {bike.getNumber()};
 
@@ -54,25 +61,10 @@ public class PrometheusCrawler extends Crawler {
             bikeLat.labels(bikeLabels).set(bike.getLocation().lat());
             bikeLon.labels(bikeLabels).set(bike.getLocation().lon());
             bikeUid.labels(bikeLabels).set(bike.getUid());
-
-            if (GeoFencingUtil.doesPointIntersectPolygon(unifestSmall,
-                    new Location(bike.getLocation().lat(), bike.getLocation().lon()))) {
-                switch (bike.getStatus()) {
-                    case AVAILABLE -> {
-                        totalBikes++;
-                        availableBikes++;
-                    }
-                    case RESERVED -> {
-                        totalBikes++;
-                        reservedBikes++;
-                    }
-                }
-            }
         }
 
-        geoFenceTotalBikes.labels("unifest_small").set(totalBikes);
-        geoFenceAvailableBikes.labels("unifest_small").set(availableBikes);
-        geoFenceReservedBikes.labels("unifest_small").set(reservedBikes);
+        setCountGeoFenceGauges(bikes, unifestSmall, "unifest_small");
+        setCountGeoFenceGauges(bikes, unifestBig, "unifest_big");
 
         tripDurationInMinutes.clear();
         tripStartLat.clear();
@@ -97,4 +89,30 @@ public class PrometheusCrawler extends Crawler {
             tripEndLon.labels(tripLabels).set(trip.getEndLocation().lon());
         }
     }
+
+    private void setCountGeoFenceGauges(List<Bike> bikes, List<Location> polygon, String name) {
+        int totalBikes = 0;
+        int availableBikes = 0;
+        int reservedBikes = 0;
+        for (Bike bike : bikes) {
+            if (GeoFencingUtil.doesPointIntersectPolygon(polygon,
+                    new Location(bike.getLocation().lat(), bike.getLocation().lon()))) {
+                switch (bike.getStatus()) {
+                    case AVAILABLE -> {
+                        totalBikes++;
+                        availableBikes++;
+                    }
+                    case RESERVED -> {
+                        totalBikes++;
+                        reservedBikes++;
+                    }
+                }
+            }
+        }
+
+        geoFenceTotalBikes.labels(name).set(totalBikes);
+        geoFenceAvailableBikes.labels(name).set(availableBikes);
+        geoFenceReservedBikes.labels(name).set(reservedBikes);
+    }
+
 }
