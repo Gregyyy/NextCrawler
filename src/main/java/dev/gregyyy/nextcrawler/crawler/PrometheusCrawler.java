@@ -7,6 +7,8 @@ import dev.gregyyy.nextcrawler.model.Location;
 import dev.gregyyy.nextcrawler.model.Trip;
 import dev.gregyyy.nextcrawler.util.GeoFencingUtil;
 
+import java.time.Duration;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -61,6 +63,8 @@ public class PrometheusCrawler extends Crawler {
             bikeLat.labels(bikeLabels).set(bike.getLocation().lat());
             bikeLon.labels(bikeLabels).set(bike.getLocation().lon());
             bikeUid.labels(bikeLabels).set(bike.getUid());
+            long stateDuration = Duration.between(bike.getLastStateChange(), ZonedDateTime.now()).toMinutes();
+            bikeStateDuration.labels(bikeLabels).set(stateDuration);
         }
 
         setCountGeoFenceGauges(bikes, unifestSmall, "unifest_small");

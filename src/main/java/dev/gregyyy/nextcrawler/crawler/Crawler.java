@@ -31,6 +31,7 @@ public abstract class Crawler {
 
     private final List<Bike> bikes = new ArrayList<>();
     private final List<Trip> trips = new ArrayList<>();
+    private final Map<Bike, Status> bikePreviousState = new HashMap<>();
 
     public Crawler() {
         this.client = new OkHttpClient();
@@ -53,7 +54,7 @@ public abstract class Crawler {
                 City karlsruhe = result.getCountries()[0].getCities()[0];
                 List<Place> places = List.of(karlsruhe.getPlaces());
 
-                saveInMemory(places);
+                saveInMemory(places, ZonedDateTime.now());
                 save(places, karlsruhe, bikes, trips);
                 trips.removeIf(trip -> trip.getEndLocation() != null);
 
@@ -79,12 +80,12 @@ public abstract class Crawler {
         }
     }
 
-    private void saveInMemory(List<Place> places) {
-        saveBikes(places);
-        saveTrips(ZonedDateTime.now());
+    private void saveInMemory(List<Place> places, ZonedDateTime now) {
+        saveBikes(places, now);
+        saveTrips(now);
     }
 
-    private void saveBikes(List<Place> places) {
+    private void saveBikes(List<Place> places, ZonedDateTime now) {
         List<Bike> bikesFound = new ArrayList<>();
 
         for (Place place : places) {
@@ -111,6 +112,11 @@ public abstract class Crawler {
         for (Bike bike : bikes) {
             if (!bikesFound.contains(bike)) {
                 bike.setStatus(Status.UNAVAILABLE);
+            }
+
+            if (!bikePreviousState.containsKey(bike) || bikePreviousState.get(bike) != bike.getStatus()) {
+                bike.setLastStateChange(now);
+                bikePreviousState.put(bike, bike.getStatus());
             }
         }
     }

@@ -3,19 +3,21 @@ package dev.gregyyy.nextcrawler.model;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.ZonedDateTime;
+import java.util.Objects;
+
+@Getter
 public class Bike {
 
-    @Getter
     private final String number;
-    @Getter
     @Setter
     private long uid;
-    @Getter
     @Setter
     private Location location;
-    @Getter
     @Setter
     private Status status;
+    @Setter
+    private ZonedDateTime lastStateChange;
 
     public Bike(String number) {
         this.number = number;
@@ -36,5 +38,10 @@ public class Bike {
         }
 
         return ((Bike) obj).getNumber().equals(this.number);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(number);
     }
 }

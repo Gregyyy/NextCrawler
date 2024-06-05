@@ -79,6 +79,11 @@ public class Prometheus {
             .help("Current uid of a bike")
             .labelNames(bikeLabels)
             .register();
+    public static final Gauge bikeStateDuration = Gauge.build()
+            .name("nextcrawler_bike_state_duration")
+            .help("Duration of current state of a bike")
+            .labelNames(bikeLabels)
+            .register();
 
     public static final String[] tripLabels = {"bikeNumber", "startUid", "endUid", "startDate", "endDate"};
     public static final Gauge tripDurationInMinutes = Gauge.build()
